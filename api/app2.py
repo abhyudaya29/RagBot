@@ -11,24 +11,14 @@ import os
 import huggingface_hub
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from langchain_huggingface import HuggingFaceEndpoint
-from fastapi import FastAPI, Request
-from flask import jsonify,request
-from pydantic import BaseModel
-from typing import Optional
+from flask import Flask, request, jsonify
+from flask_cors import CORS  # Import CORS
 
 
-from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+app2 = Flask(__name__)
+CORS(app2)  # Enable CORS for all routes
 
 huggingface_hub.login(token="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")
 
@@ -88,12 +78,13 @@ def gen_response(question):
     answer = rag_chain.invoke(question)
     return answer
 
-@app.post('/api/query')
-async def query(data: dict):
+
+@app2.route('/api/query', methods=['POST'])
+def query():
+    data = request.json
     question = data.get('question', '')
     response = gen_response(question)
-    return {"response": response}
-
+    return jsonify({"response": response})
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app2.run(port=8000, debug=True)
