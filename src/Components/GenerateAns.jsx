@@ -1,5 +1,7 @@
 import axios from 'axios';
 import React, { useState } from 'react';
+import { FaUser, FaRobot } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown';
 import Loader from './Loader';
 
 const GenerateAns = () => {
@@ -17,14 +19,13 @@ const GenerateAns = () => {
         setLoading(true);
 
         try {
-            const response = await axios({
-                url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + import.meta.env.VITE_APP_API_KEY,
-                method: "post",
-                data: { "contents": [{ "parts": [{ "text": prompt }] }] },
+            const response = await axios.post("http://127.0.0.1:8000/api/query", {
+                question: prompt,
             });
+
             const botMessage = {
                 sender: "bot",
-                text: response.data.candidates[0].content.parts[0].text,
+                text: response.data.response,
                 timestamp: new Date().toISOString(),
             };
             setMessages((prevMessages) => [...prevMessages, botMessage]);
@@ -42,17 +43,35 @@ const GenerateAns = () => {
     };
 
     return (
-        <div className="h-screen w-screen flex items-center justify-center p-5">
-            <div className="flex flex-col bg-white dark:bg-gray-800 shadow-lg rounded-lg w-full max-w-4xl h-full">
-                <div className="flex-grow overflow-auto p-4 bg-gray-50 dark:bg-gray-700 rounded-t-lg">
+        <div className="h-screen w-screen flex items-center justify-center p-5 bg-gradient-to-r from-blue-400 to-purple-500">
+            <div className="flex flex-col bg-white dark:bg-gray-800 shadow-lg rounded-lg w-full max-w-3xl h-full max-h-4xl">
+                <div className="bg-blue-600 text-white text-center py-4 rounded-t-lg">
+                    <h1 className="text-2xl font-bold">Chat with Bot</h1>
+                </div>
+                <div className="flex-grow overflow-auto p-4 bg-gray-50 dark:bg-gray-700">
                     {messages.map((msg, index) => (
                         <div key={index} className={`mb-4 flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-xs w-fit p-3 rounded-lg ${msg.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-gray-200'}`}>
-                                <div className="text-sm">{msg.text}</div>
-                                <div className="text-xs text-right mt-1 text-gray-200 dark:text-gray-400">
-                                    {formatTimestamp(msg.timestamp)}
+                            {msg.sender === 'user' ? (
+                                <div className="flex items-center space-x-2">
+                                    <div className="max-w-xs w-fit p-3 rounded-lg bg-blue-500 text-white">
+                                        <div className="text-sm">{msg.text}</div>
+                                        <div className="text-xs text-right mt-1 text-gray-200">
+                                            {formatTimestamp(msg.timestamp)}
+                                        </div>
+                                    </div>
+                                    <FaUser className="text-2xl text-blue-500" />
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="flex items-center space-x-2">
+                                    <FaRobot className="text-2xl text-gray-600 dark:text-gray-400" />
+                                    <div className="max-w-xs w-fit p-3 rounded-lg bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-gray-200">
+                                        <ReactMarkdown className="prose prose-sm">{msg.text}</ReactMarkdown>
+                                        <div className="text-xs text-right mt-1 text-gray-600 dark:text-gray-400">
+                                            {formatTimestamp(msg.timestamp)}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ))}
                     {loading && <div className="flex justify-center"><Loader /></div>}
