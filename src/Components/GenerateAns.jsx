@@ -1,7 +1,6 @@
 import axios from 'axios';
 import React, { useState } from 'react';
 import { FaUser, FaRobot } from 'react-icons/fa';
-import ReactMarkdown from 'react-markdown';
 import Loader from './Loader';
 
 const GenerateAns = () => {
@@ -24,6 +23,9 @@ const GenerateAns = () => {
                 method: "post",
                 data: { "contents": [{ "parts": [{ "text": prompt }] }] },
             });
+
+            console.log("API response:", response.data);
+
             const botMessage = {
                 sender: "bot",
                 text: response.data.candidates[0].content.parts[0].text,
@@ -66,7 +68,7 @@ const GenerateAns = () => {
                                 <div className="flex items-center space-x-2">
                                     <FaRobot className="text-2xl text-gray-600 dark:text-gray-400" />
                                     <div className="max-w-xs w-fit p-3 rounded-lg bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-gray-200">
-                                        <ReactMarkdown className="prose prose-sm">{msg.text}</ReactMarkdown>
+                                        <p className="prose prose-sm">{msg.text}</p>
                                         <div className="text-xs text-right mt-1 text-gray-600 dark:text-gray-400">
                                             {formatTimestamp(msg.timestamp)}
                                         </div>
